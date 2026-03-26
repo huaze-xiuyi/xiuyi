@@ -719,6 +719,20 @@ code, pre {
     padding: 0 var(--spacing-lg);
   }
 
+  /* 隐藏手机端汉堡菜单按钮（三条横杠） */
+  .sidebar-toggle {
+    display: none !important;
+  }
+
+  /* 手机端只显示logo，隐藏品牌文字 */
+  .navbar-brand {
+    font-size: 0;  /* 隐藏文字 */
+  }
+
+  .navbar-logo {
+    font-size: 1rem;  /* 恢复logo显示 */
+  }
+
   .sidebar {
     position: absolute;
     left: -280px;
@@ -736,12 +750,112 @@ code, pre {
   }
 
   .navbar-nav {
-    gap: var(--spacing-sm);
+    gap: var(--spacing-md);
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    flex-wrap: nowrap;
+    padding-right: var(--spacing-lg);
+    margin-right: -var(--spacing-lg);
+    /* 隐藏滚动条 */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .navbar-nav::-webkit-scrollbar {
+    display: none;
   }
 
   .navbar-nav a {
-    padding: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
     font-size: 0.875rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* 导航栏滚动提示 */
+  .navbar::after {
+    content: '';
+    position: absolute;
+    right: var(--spacing-lg);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.4));
+    pointer-events: none;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  /* 当导航栏可滚动时显示提示 */
+  .navbar.scrollable::after {
+    opacity: 1;
+  }
+
+  /* 手机端页头卡片缩小 */
+  .glass-effect {
+    padding: 1.5rem 1.25rem !important;
+  }
+
+  .glass-effect h1 {
+    font-size: 1.75rem !important;
+  }
+
+  .glass-effect p {
+    font-size: 0.875rem !important;
+  }
+
+  /* 手机端标签按钮减小 */
+  .tab-btn {
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+    font-size: 0.8rem !important;
+  }
+
+  .tab-btn > div:first-child {
+    font-size: 0.9rem;
+  }
+
+  .tab-btn > div:last-child {
+    font-size: 0.65rem;
+  }
+
+  /* 手机端卡片减小padding */
+  .glass-light {
+    padding: 0.75rem 1rem !important;
+  }
+
+  /* 手机端标签内容容器减小间距 */
+  #employeeSurvey .grid,
+  #processManagement .grid {
+    gap: 0.75rem !important;
+  }
+
+  /* 手机端卡片减小 */
+  .card-hover {
+    padding: 0.75rem 1rem !important;
+  }
+
+  .card-hover .flex.items-center {
+    gap: 0.5rem !important;
+  }
+
+  .card-hover h3 {
+    font-size: 0.95rem !important;
+  }
+
+  .card-hover > p {
+    font-size: 0.7rem !important;
+  }
+
+  .card-hover ul {
+    gap: 0.5rem !important;
+  }
+
+  .card-hover li {
+    font-size: 0.8rem !important;
   }
 }
 
@@ -1876,4 +1990,194 @@ a[role="button"],
 
 [data-theme="dark"] .metric-value {
   color: #38bdf8;
+}
+
+/* ============ 下拉列表筛选样式 ============ */
+.filter-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 280px;
+}
+
+.filter-dropdown-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-color);
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.filter-dropdown-button:hover {
+  border-color: var(--color-primary);
+  background: rgba(14, 165, 233, 0.02);
+}
+
+.filter-dropdown-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.filter-dropdown-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.filter-dropdown-value {
+  font-weight: 600;
+  color: var(--color-primary);
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filter-dropdown-icon {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.filter-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  margin-top: 0.5rem;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 1000;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.filter-dropdown-menu.active {
+  max-height: 400px;
+  opacity: 1;
+  visibility: visible;
+  overflow-y: auto;
+}
+
+.filter-dropdown-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--bg-secondary);
+  user-select: none;
+  outline: none;
+}
+
+.filter-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.filter-dropdown-item:hover {
+  background: var(--bg-secondary);
+}
+
+.filter-dropdown-item.active {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--color-primary);
+  font-weight: 600;
+  border-left: 3px solid var(--color-primary);
+  padding-left: calc(1rem - 3px);
+}
+
+.filter-dropdown-item:focus-visible {
+  background: rgba(14, 165, 233, 0.15);
+}
+
+/* 深色模式样式 */
+[data-theme="dark"] .filter-dropdown-button {
+  background: #1e293b;
+  border-color: rgba(148, 163, 184, 0.2);
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .filter-dropdown-button:hover {
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.05);
+}
+
+[data-theme="dark"] .filter-dropdown-menu {
+  background: #1e293b;
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+[data-theme="dark"] .filter-dropdown-item {
+  color: #f1f5f9;
+  border-bottom-color: #334155;
+}
+
+[data-theme="dark"] .filter-dropdown-item:hover {
+  background: #334155;
+}
+
+[data-theme="dark"] .filter-dropdown-item.active {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-left-color: #38bdf8;
+}
+
+/* 下拉菜单滚动条样式 */
+.filter-dropdown-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-dropdown-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(14, 165, 233, 0.3);
+  border-radius: 3px;
+}
+
+.filter-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(14, 165, 233, 0.5);
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .filter-dropdown-wrapper {
+    max-width: 100%;
+  }
+
+  .filter-dropdown-button {
+    font-size: 0.8125rem;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .filter-dropdown-label {
+    display: none;
+  }
+
+  .filter-dropdown-value {
+    text-align: center;
+  }
+
+  .filter-dropdown-item {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .filter-dropdown-menu {
+    max-height: 250px;
+  }
 }
