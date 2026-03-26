@@ -325,6 +325,13 @@
       height: 12px;
       border-radius: 2px;
     }
+
+    /* 手机端岗位字段字体调小 */
+    @media (max-width: 768px) {
+      .ranking-table tbody td:nth-child(2) {
+        font-size: 0.875rem;
+      }
+    }
   </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 via-white to-slate-50 min-h-screen text-slate-900">
@@ -1518,5 +1525,6 @@
 
   <script src="utils.js"></script>
   <script src="a11y-feedback.js"></script>
+  <script src="navbar-scroll.js"></script>
 </body>
 </html>
