@@ -60,6 +60,13 @@ class QuarterManager {
       } else if (quarter === '2025Q3') {
         return typeof happyQ3 !== 'undefined' ? happyQ3 : [];
       }
+    } else if (type === 'job') {
+      // 职能数据
+      if (quarter === '2025Q4') {
+        return typeof happyJobQ4 !== 'undefined' ? happyJobQ4 : [];
+      } else if (quarter === '2025Q3') {
+        return typeof happyJobQ3 !== 'undefined' ? happyJobQ3 : [];
+      }
     } else {
       // 片区数据（默认）
       if (quarter === '2025Q4') {
