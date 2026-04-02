@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>幸福指数仪表板 - 职能分析</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="theme-manager.js"></script>
+  <style>
+    .glass-card {
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .glass-card {
+        transition: none;
+      }
+      .glass-card:hover {
+        transform: none;
+      }
+    }
+
+    /* Score Badge */
+    .score-badge {
+      width: 90px;
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 1.75rem;
+      font-weight: 700;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .score-a-plus {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      color: white;
+    }
+
+    .score-a {
+      background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+      color: white;
+    }
+
+    .score-b-plus {
+      background: linear-gradient(135deg, #ca8a04 0%, #eab308 100%);
+      color: white;
+    }
+
+    .score-b {
+      background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+      color: white;
+    }
+
+    .score-c {
+      background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+      color: white;
+    }
+
+    .score-d {
+      background: linear-gradient(135deg, #7c2d12 0%, #b45309 100%);
+      color: white;
+    }
+
+    /* Metric Item */
+    .metric-box {
+      padding: 1rem;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(129, 212, 250, 0.05) 100%);
+      border-left: 3px solid #0284c7;
+      border-radius: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .metric-box:hover {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(129, 212, 250, 0.1) 100%);
+      transform: translateX(2px);
+    }
+
+    .metric-label {
+      font-size: 0.8125rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-value {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Chart Container */
+    .chart-wrapper {
+      position: relative;
+      height: 320px;
+      margin-bottom: 1rem;
+    }
+
+    /* Rank Badge */
+    .rank-badge {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .rank-1 {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: white;
+    }
+
+    .rank-2 {
+      background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
+      color: white;
+    }
+
+    .rank-3 {
+      background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+      color: white;
+    }
+
+    .rank-other {
+      background: #e5e7eb;
+      color: #64748b;
+    }
+
+    /* Section Title */
+    .section-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #0366d6 0%, #0284c7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Filter Button */
+    .filter-chip {
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1.5px solid rgba(3, 102, 214, 0.2);
+      background: rgba(3, 102, 214, 0.05);
+      color: #1e40af;
+    }
+
+    .filter-chip:hover {
+      border-color: #0366d6;
+      background: rgba(3, 102, 214, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .filter-chip.active {
+      background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+      color: white;
+      border-color: #0284c7;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+
+    /* Filter Tab */
+    .filter-tab {
+      padding: 0.5rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #64748b;
+    }
+
+    .filter-tab:hover {
+      background: rgba(3, 102, 214, 0.08);
+      color: #1e40af;
+    }
+
+    .filter-tab.active {
+      background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+
+    /* Focus State */
+    button:focus-visible,
+    a:focus-visible {
+      outline: 2px solid #0284c7;
+      outline-offset: 2px;
+    }
+
+    /* Dimension Grid */
+    .dimension-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat-card {
+      background: rgba(248, 250, 252, 0.9);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      background: rgba(248, 250, 252, 1);
+      border-color: rgba(14, 165, 233, 0.5);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.1);
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 0.5rem;
+      font-weight: 500;
+    }
+
+    /* Dimension Tab Styles */
+    .dimension-tab {
+      background: rgba(248, 250, 252, 0.9);
+      color: #64748b;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      transition: all 0.3s ease;
+    }
+
+    .dimension-tab:hover {
+      border-color: rgba(14, 165, 233, 0.5);
+      background: rgba(248, 250, 252, 1);
+    }
+
+    .dimension-tab-active {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      color: white;
+      box-shadow: 0 8px 16px rgba(14, 165, 233, 0.25);
+      border-color: transparent;
+    }
+
+    .dimension-content {
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .dimension-content.hidden {
+      display: none;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Tab Button Styles */
+    .tab-btn {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .tab-btn-active {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      box-shadow: 0 8px 16px rgba(14, 165, 233, 0.25);
+      color: white;
+    }
+
+    /* Tab Content */
+    .tab-content {
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .tab-content.hidden {
+      display: none;
+    }
+
+    /* Ranking Table */
+    .ranking-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .ranking-table thead th {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(2, 132, 199, 0.1));
+      padding: 0.75rem;
+      text-align: left;
+      font-weight: 600;
+      color: #475569;
+      border-bottom: 2px solid rgba(14, 165, 233, 0.2);
+    }
+
+    .ranking-table tbody td {
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+    }
+
+    .ranking-table tbody tr:hover {
+      background: rgba(14, 165, 233, 0.05);
+    }
+
+    .comparison-bar {
+      background: linear-gradient(90deg, rgba(14, 165, 233, 0.1), rgba(14, 165, 233, 0.3));
+      border-radius: 0.5rem;
+      height: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .comparison-fill {
+      background: linear-gradient(90deg, #0ea5e9, #0284c7);
+      height: 100%;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 0.5rem;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* Chart Card */
+    .chart-card {
+      background: linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(240, 249, 255, 0.95));
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #0ea5e9, #0284c7, #06b6d4);
+    }
+
+    .chart-card:hover {
+      box-shadow: 0 8px 24px rgba(14, 165, 233, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 1024px) {
+      .charts-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .chart-card.full-width {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .chart-canvas-wrapper {
+      position: relative;
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <button id="sidebarToggle" class="sidebar-toggle hidden-desktop">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12h18M3 6h18M3 18h18"></path>
+      </svg>
+    </button>
+    <div class="navbar-brand">
+      <img src="logo.png" alt="幸福生态平台" class="navbar-logo">
+      幸福生态平台
+    </div>
+    <nav class="navbar-nav">
+      <a href="index.html">首页</a>
+      <a href="happiness.html">评分逻辑</a>
+      <a href="shanghai-happiness-dashboard.html">上海区分析</a>
+      <a href="happiness-dashboard-new.html">片区分析</a>
+      <a href="happiness-shop-dashboard.html">营业店分析</a>
+      <a href="job-analysis-dashboard.html" class="active">职能分析</a>
+      <button class="theme-toggle" aria-label="切换主题">🌙</button>
+    </nav>
+  </nav>
+
+  <!-- 侧栏 -->
+  <aside class="sidebar" id="sidebar">
+    <ul class="sidebar-menu">
+      <li class="sidebar-menu-item">
+        <a href="index.html">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          首页
+        </a>
+      </li>
+      <li class="sidebar-menu-item">
+        <a href="happiness.html">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v20M2 12h20"></path>
+            <circle cx="12" cy="12" r="10"></circle>
+          </svg>
+          评分逻辑
+        </a>
+      </li>
+      <li class="sidebar-menu-item">
+        <a href="shanghai-happiness-dashboard.html">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3v18a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"></path>
+            <path d="M7 8h10M7 13h5M7 18h3"></path>
+          </svg>
+          上海区分析
+        </a>
+      </li>
+      <li class="sidebar-menu-item">
+        <a href="happiness-dashboard-new.html">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          片区分析
+        </a>
+      </li>
+      <li class="sidebar-menu-item">
+        <a href="happiness-shop-dashboard.html">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6-7 6 7M9 5v14a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V5M9 9h6M9 13h6"></path>
+          </svg>
+          营业店分析
+        </a>
+      </li>
+      <li class="sidebar-menu-item">
+        <a href="job-analysis-dashboard.html" class="active">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+            <path d="M12 6v6l4 2"></path>
+          </svg>
+          职能分析
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- 主容器 -->
+  <div class="main-wrapper">
+    <div class="container">
+    <!-- Section 1: Job Overview -->
+    <section class="mb-16">
+      <div class="mb-8">
+        <h2 class="section-title">💼 职能部门幸福指数分析</h2>
+        <p class="text-slate-600 text-lg">显示各职能部门的综合幸福指数评分</p>
+      </div>
+
+      <!-- Job Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="metric-box glass-card rounded-xl p-6">
+          <div class="metric-label">部门总数</div>
+          <div class="metric-value" id="jobCount">--</div>
+        </div>
+        <div class="metric-box glass-card rounded-xl p-6">
+          <div class="metric-label">平均得分</div>
+          <div class="metric-value" id="jobAvgScore">--</div>
+        </div>
+        <div class="metric-box glass-card rounded-xl p-6">
+          <div class="metric-label">最高得分</div>
+          <div class="metric-value text-green-600" id="jobMaxScore">--</div>
+        </div>
+        <div class="metric-box glass-card rounded-xl p-6">
+          <div class="metric-label">最低得分</div>
+          <div class="metric-value text-red-600" id="jobMinScore">--</div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Distribution Chart -->
+        <div class="glass-card rounded-2xl p-6">
+          <h3 class="text-lg font-bold mb-4 text-slate-900">得分分布</h3>
+          <div class="chart-wrapper">
+            <canvas id="jobDistributionChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Top/Bottom Jobs Combined -->
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold text-slate-900">部门排名</h3>
+            <div class="flex gap-2" role="tablist" aria-label="部门排名筛选">
+              <button class="filter-tab active" data-tab="top" role="tab" aria-selected="true" aria-controls="jobListContainer">
+                Top 5
+              </button>
+              <button class="filter-tab" data-tab="bottom" role="tab" aria-selected="false" aria-controls="jobListContainer">
+                后Top 5
+              </button>
+            </div>
+          </div>
+          <div id="jobListContainer" class="space-y-3" role="tabpanel">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- All Jobs Bar Chart -->
+      <div class="glass-card rounded-2xl p-6 mb-8">
+        <h3 class="text-lg font-bold mb-4 text-slate-900">各部门详细分数</h3>
+        <div class="chart-wrapper" style="height: 400px;">
+          <canvas id="allJobsBarChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="border-t-2 border-gray-200 my-16"></div>
+
+    <!-- Section 2: Job Group Analysis -->
+    <section class="mb-16">
+      <div class="mb-8">
+        <h2 class="section-title">👥 职能小组分析</h2>
+        <p class="text-slate-600 text-lg">按部门筛选查看各小组幸福指数</p>
+      </div>
+
+      <!-- Department Filter -->
+      <div class="glass-card rounded-2xl p-6 mb-8" style="position: relative; z-index: 200;">
+        <h3 class="text-lg font-bold mb-4 text-slate-900">筛选部门</h3>
+        <div id="departmentFilterContainer" style="max-width: 280px;">
+          <!-- Generated by JS -->
+        </div>
+      </div>
+
+      <!-- Groups Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="metric-box glass-card rounded-xl p-6">
+          <div class="metric-label">小组总数</div>
+          <div class="metric-value" id="groupCount">--</div>
+        </div>
+        <div class="metric-box glass-card rounded-xl p-6">
+          <div class="metric-label">平均得分</div>
+          <div class="metric-value" id="groupAvgScore">--</div>
+        </div>
+        <div class="metric-box glass-card rounded-xl p-6">
+          <div class="metric-label">最高得分</div>
+          <div class="metric-value text-green-600" id="groupMaxScore">--</div>
+        </div>
+        <div class="metric-box glass-card rounded-xl p-6">
+          <div class="metric-label">最低得分</div>
+          <div class="metric-value text-red-600" id="groupMinScore">--</div>
+        </div>
+      </div>
+
+      <!-- Group Charts -->
+      <div class="glass-card rounded-2xl p-6 mb-8">
+        <h3 class="text-lg font-bold mb-4 text-slate-900">各小组详细分数</h3>
+        <div class="chart-wrapper" style="height: 400px;">
+          <canvas id="groupsBarChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Dimension Details -->
+      <div class="glass-card rounded-2xl p-8 mb-8">
+        <h3 class="text-lg font-semibold text-slate-900 mb-6">四维度子维度详情</h3>
+
+        <!-- Dimension Selection Tabs -->
+        <div class="flex flex-wrap gap-2 sm:gap-3 mb-8 pb-6 border-b border-slate-200">
+          <button
+            onclick="showJobDimensionTab('employee', this)"
+            class="dimension-tab dimension-tab-active py-2 px-4 rounded-lg text-sm font-600 cursor-pointer transition-all duration-300"
+            aria-label="员工满意度调研"
+          >
+            👥 员工满意度<span class="text-xs ml-1">(权重30%)</span>
+          </button>
+          <button
+            onclick="showJobDimensionTab('process', this)"
+            class="dimension-tab py-2 px-4 rounded-lg text-sm font-600 cursor-pointer transition-all duration-300 bg-slate-100 text-slate-700 hover:bg-slate-200"
+            aria-label="过程管理"
+          >
+            📊 过程管理<span class="text-xs ml-1">(权重30%)</span>
+          </button>
+          <button
+            onclick="showJobDimensionTab('voice', this)"
+            class="dimension-tab py-2 px-4 rounded-lg text-sm font-600 cursor-pointer transition-all duration-300 bg-slate-100 text-slate-700 hover:bg-slate-200"
+            aria-label="声音管理"
+          >
+            🎤 声音管理<span class="text-xs ml-1">(权重30%)</span>
+          </button>
+          <button
+            onclick="showJobDimensionTab('fragment', this)"
+            class="dimension-tab py-2 px-4 rounded-lg text-sm font-600 cursor-pointer transition-all duration-300 bg-slate-100 text-slate-700 hover:bg-slate-200"
+            aria-label="碎片化调研"
+          >
+            🔍 碎片化调研<span class="text-xs ml-1">(权重10%)</span>
+          </button>
+        </div>
+
+        <!-- Employee Satisfaction Dimensions -->
+        <div id="employeeDimensionJob" class="dimension-content">
+          <div class="dimension-grid" id="employeeDimensionsJob">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+        <!-- Process Management Dimensions -->
+        <div id="processDimensionJob" class="dimension-content hidden">
+          <div class="dimension-grid" id="processDimensionsJob">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+        <!-- Voice Management Dimensions -->
+        <div id="voiceDimensionJob" class="dimension-content hidden">
+          <div class="dimension-grid" id="voiceDimensionsJob">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+        <!-- Fragment Survey Dimensions -->
+        <div id="fragmentDimensionJob" class="dimension-content hidden">
+          <div class="dimension-grid" id="fragmentDimensionsJob">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="border-t-2 border-gray-200 my-16"></div>
+  </div>
+
+  <!-- Load data first -->
+  <script src="happyJobQ3.js"></script>
+  <script src="happyJobQ4.js"></script>
+  <script src="quarter-manager.js"></script>
+  <script src="quarter-filter-ui.js"></script>
+  <script src="filter-dropdown.js"></script>
+
+  <!-- Then run the application -->
+  <script>
+    // ============ DATA PROCESSING ============
+    const getJobData = () => {
+      if (window.quarterManager && typeof window.quarterManager.getCurrentData === 'function') {
+        return window.quarterManager.getQuarterData(window.quarterManager.getQuarter(), 'job');
+      }
+      return typeof happyJobQ4 !== 'undefined' ? happyJobQ4 : [];
+    };
+
+    const processJobData = (dataSource = null) => {
+      const finalDataSource = dataSource || getJobData();
+
+      if (!Array.isArray(finalDataSource) || finalDataSource.length === 0) {
+        console.error('数据未正确加载');
+        return { jobStats: {}, groups: {}, departmentGroups: {} };
+      }
+
+      const jobs = {};
+      const groups = {};
+      const departmentGroups = {};
+
+      // Process data
+      finalDataSource.forEach(item => {
+        const department = item.部门;
+        const group = item.组;
+        const score = parseFloat(item.幸福指数综合得分);
+
+        if (isNaN(score) || !department) return;
+
+        // 部门级数据（组 === "-"）
+        if (group === "-") {
+          if (!jobs[department]) {
+            jobs[department] = [];
+          }
+          jobs[department].push({ score, ...item });
+        }
+
+        // 小组级数据（组有值）
+        if (group && group !== "-") {
+          if (!groups[group]) {
+            groups[group] = [];
+          }
+          groups[group].push({ score, ...item });
+
+          // 按部门聚合小组
+          if (!departmentGroups[department]) {
+            departmentGroups[department] = {};
+          }
+          if (!departmentGroups[department][group]) {
+            departmentGroups[department][group] = [];
+          }
+          departmentGroups[department][group].push({ score, ...item });
+        }
+      });
+
+      // Calculate department averages
+      const jobStats = {};
+      Object.entries(jobs).forEach(([jobName, jobData]) => {
+        const scores = jobData.map(d => d.score);
+        jobStats[jobName] = {
+          avg: scores.reduce((a, b) => a + b, 0) / scores.length,
+          min: Math.min(...scores),
+          max: Math.max(...scores),
+          count: scores.length
+        };
+      });
+
+      // Calculate group averages
+      const groupStats = {};
+      Object.entries(groups).forEach(([groupName, groupData]) => {
+        const scores = groupData.map(d => d.score);
+        groupStats[groupName] = {
+          avg: scores.reduce((a, b) => a + b, 0) / scores.length,
+          min: Math.min(...scores),
+          max: Math.max(...scores),
+          count: scores.length
+        };
+      });
+
+      console.log('职能数据处理完成：', { jobCount: Object.keys(jobStats).length, groupCount: Object.keys(groupStats).length });
+
+      return { jobStats, groupStats, groups, departmentGroups };
+    };
+
+    let jobStats, groupStats, groups, departmentGroups;
+
+    // Initialize with default empty state
+    jobStats = {};
+    groupStats = {};
+    groups = {};
+    departmentGroups = {};
+
+    // ============ UTILITY FUNCTIONS ============
+    const getScoreBadgeClass = (score) => {
+      if (score >= 90) return 'score-a-plus';
+      if (score >= 80) return 'score-a';
+      if (score >= 70) return 'score-b-plus';
+      if (score >= 60) return 'score-b';
+      if (score >= 50) return 'score-c';
+      return 'score-d';
+    };
+
+    const getScoreGrade = (score) => {
+      if (score >= 90) return 'A+';
+      if (score >= 80) return 'A';
+      if (score >= 70) return 'B+';
+      if (score >= 60) return 'B';
+      if (score >= 50) return 'C';
+      return 'D';
+    };
+
+    const getScoreLabel = (score) => {
+      if (score >= 90) return '优秀';
+      if (score >= 80) return '良好';
+      if (score >= 70) return '中等偏上';
+      if (score >= 60) return '中等';
+      if (score >= 50) return '待改进';
+      return '需关注';
+    };
+
+    const getRankBadgeClass = (rank) => {
+      if (rank === 1) return 'rank-1';
+      if (rank === 2) return 'rank-2';
+      if (rank === 3) return 'rank-3';
+      return 'rank-other';
+    };
+
+    // Filter by department
+    const getFilteredJobs = (selectedDepartment = '全部') => {
+      if (selectedDepartment === '全部') {
+        return jobStats;
+      }
+      const filtered = {};
+      if (jobStats[selectedDepartment]) {
+        filtered[selectedDepartment] = jobStats[selectedDepartment];
+      }
+      return filtered;
+    };
+
+    // Filter groups by department
+    const getFilteredGroups = (selectedDepartment = '全部') => {
+      if (selectedDepartment === '全部') {
+        return groupStats;
+      }
+      const filtered = {};
+      if (departmentGroups[selectedDepartment]) {
+        Object.keys(departmentGroups[selectedDepartment]).forEach(groupName => {
+          filtered[groupName] = groupStats[groupName];
+        });
+      }
+      return filtered;
+    };
+
+    // ============ RENDER FUNCTIONS ============
+
+    // 1. Render Top Jobs List
+    // 1. Render Jobs Ranking (Top 5 / Bottom 5)
+    const renderJobRanking = (type = 'top') => {
+      const container = document.getElementById('jobListContainer');
+      let sorted;
+
+      if (type === 'top') {
+        sorted = Object.entries(jobStats)
+          .sort((a, b) => b[1].avg - a[1].avg)
+          .slice(0, 5);
+      } else {
+        sorted = Object.entries(jobStats)
+          .sort((a, b) => a[1].avg - b[1].avg)
+          .slice(0, 5);
+      }
+
+      if (sorted.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 text-center py-4">暂无数据</p>';
+        return;
+      }
+
+      container.innerHTML = sorted.map(([name, stats], idx) => `
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+          <div class="rank-badge ${type === 'top' ? getRankBadgeClass(idx + 1) : ''}" ${type === 'bottom' ? 'style="background: linear-gradient(135deg, #94a3b8 0%, #cbd5e1 100%); color: white;"' : ''}>${idx + 1}</div>
+          <div class="flex-1">
+            <p class="font-semibold text-slate-900">${name}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-bold text-lg text-slate-900">${stats.avg.toFixed(1)}</p>
+            <p class="text-xs text-slate-500">${getScoreGrade(stats.avg)}</p>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    // 1.5 Setup Job Ranking Tabs
+    const setupJobRankingTabs = () => {
+      const tabs = document.querySelectorAll('[data-tab]');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          // 更新 tab 状态
+          tabs.forEach(t => {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+          });
+          tab.classList.add('active');
+          tab.setAttribute('aria-selected', 'true');
+
+          // 渲染对应的排名列表
+          const type = tab.dataset.tab;
+          renderJobRanking(type);
+        });
+
+        // 键盘支持
+        tab.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            tab.click();
+          }
+        });
+      });
+    };
+
+    // 2. Render Department Filter Buttons
+    const renderDepartmentFilters = () => {
+      const departmentList = Object.keys(jobStats).sort();
+
+      if (departmentList.length === 0) {
+        const container = document.getElementById('departmentFilterContainer');
+        if (container) container.innerHTML = '<p class="text-slate-500">暂无部门数据</p>';
+        return;
+      }
+
+      // Create dropdown items
+      const items = [
+        { label: '全部部门', value: '全部' },
+        ...departmentList.map(d => ({ label: d, value: d }))
+      ];
+
+      // Initialize dropdown
+      const dropdown = new FilterDropdown({
+        containerId: 'departmentFilterContainer',
+        label: '部门',
+        items: items,
+        defaultValue: '全部',
+        onSelect: (value) => {
+          updateGroupViews(value);
+        }
+      });
+
+      dropdown.init();
+    };
+
+    // 3. Render Group Filter
+    const renderGroupFilterForJob = (selectedDepartment = '全部') => {
+      const container = document.getElementById('groupFilterContainerJob');
+      if (!container) return;
+
+      let groupList = [];
+      if (selectedDepartment === '全部') {
+        groupList = Object.keys(groupStats);
+      } else {
+        if (departmentGroups[selectedDepartment]) {
+          groupList = Object.keys(departmentGroups[selectedDepartment]);
+        }
+      }
+
+      groupList.sort();
+
+      const items = [
+        { label: '全部小组', value: '全部小组' },
+        ...groupList.map(group => ({ label: group, value: group }))
+      ];
+
+      const dropdown = new FilterDropdown({
+        containerId: 'groupFilterContainerJob',
+        label: '小组',
+        items: items,
+        defaultValue: '全部小组',
+        onSelect: (value) => {
+          const selectedGroup = value;
+          initializeDimensionSubitemsJob(selectedDepartment, selectedGroup);
+        }
+      });
+
+      dropdown.init();
+    };
+
+    // 4. Update Job Statistics
+    const updateJobStats = (selectedDepartment = '全部') => {
+      const filtered = getFilteredJobs(selectedDepartment);
+      const scores = Object.values(filtered).map(d => d.avg);
+      if (scores.length === 0) {
+        document.getElementById('jobCount').textContent = '0';
+        document.getElementById('jobAvgScore').textContent = '--';
+        document.getElementById('jobMaxScore').textContent = '--';
+        document.getElementById('jobMinScore').textContent = '--';
+        return;
+      }
+
+      const avg = scores.reduce((a, b) => a + b) / scores.length;
+      const max = Math.max(...scores);
+      const min = Math.min(...scores);
+
+      document.getElementById('jobCount').textContent = Object.keys(filtered).length;
+      document.getElementById('jobAvgScore').textContent = avg.toFixed(1);
+      document.getElementById('jobMaxScore').textContent = max.toFixed(1);
+      document.getElementById('jobMinScore').textContent = min.toFixed(1);
+    };
+
+    // 5. Update Group Statistics
+    const updateGroupStats = (selectedDepartment = '全部') => {
+      const filtered = getFilteredGroups(selectedDepartment);
+      const scores = Object.values(filtered).map(d => d.avg);
+      if (scores.length === 0) {
+        document.getElementById('groupCount').textContent = '0';
+        document.getElementById('groupAvgScore').textContent = '--';
+        document.getElementById('groupMaxScore').textContent = '--';
+        document.getElementById('groupMinScore').textContent = '--';
+        return;
+      }
+
+      const avg = scores.reduce((a, b) => a + b) / scores.length;
+      const max = Math.max(...scores);
+      const min = Math.min(...scores);
+
+      document.getElementById('groupCount').textContent = Object.keys(filtered).length;
+      document.getElementById('groupAvgScore').textContent = avg.toFixed(1);
+      document.getElementById('groupMaxScore').textContent = max.toFixed(1);
+      document.getElementById('groupMinScore').textContent = min.toFixed(1);
+    };
+
+    // ============ CHARTS ============
+
+    let jobDistChart, allJobsChart, groupsBarChart;
+
+    // Job Distribution Chart
+    const renderJobDistChart = (selectedDepartment = '全部') => {
+      const ctx = document.getElementById('jobDistributionChart');
+      if (!ctx) return;
+
+      const filtered = getFilteredJobs(selectedDepartment);
+      const scores = Object.values(filtered).map(d => d.avg);
+      if (scores.length === 0) return;
+
+      const ranges = {
+        '90-100': scores.filter(s => s >= 90).length,
+        '80-89': scores.filter(s => s >= 80 && s < 90).length,
+        '70-79': scores.filter(s => s >= 70 && s < 80).length,
+        '60-69': scores.filter(s => s >= 60 && s < 70).length,
+        '<60': scores.filter(s => s < 60).length
+      };
+
+      if (jobDistChart) {
+        jobDistChart.data.datasets[0].data = Object.values(ranges);
+        jobDistChart.update();
+      } else {
+        jobDistChart = new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: Object.keys(ranges),
+            datasets: [{
+              data: Object.values(ranges),
+              backgroundColor: ['#10b981', '#0ea5e9', '#eab308', '#f59e0b', '#ef4444'],
+              borderColor: 'white',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { padding: 15, font: { size: 12 } }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                borderRadius: 8,
+                titleFont: { size: 13 }
+              }
+            }
+          }
+        });
+      }
+    };
+
+    // All Jobs Bar Chart
+    const renderAllJobsBarChart = (selectedDepartment = '全部') => {
+      const ctx = document.getElementById('allJobsBarChart');
+      if (!ctx) return;
+
+      const filtered = getFilteredJobs(selectedDepartment);
+      const sorted = Object.entries(filtered)
+        .sort((a, b) => b[1].avg - a[1].avg);
+
+      if (sorted.length === 0) return;
+
+      const labels = sorted.map(([name]) => name);
+      const data = sorted.map(([, stats]) => stats.avg);
+      const avgScore = data.reduce((sum, score) => sum + score, 0) / data.length;
+
+      if (allJobsChart) {
+        allJobsChart.data.labels = labels;
+        allJobsChart.data.datasets[0].data = data;
+        allJobsChart.data.datasets[0].backgroundColor = data.map(score => {
+          if (score >= 90) return '#10b981';
+          if (score >= 80) return '#0ea5e9';
+          if (score >= 70) return '#eab308';
+          if (score >= 60) return '#f59e0b';
+          return '#ef4444';
+        });
+        allJobsChart.data.datasets[1].data = Array(data.length).fill(avgScore);
+        allJobsChart.update();
+      } else {
+        allJobsChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: '幸福指数',
+                data: data,
+                backgroundColor: data.map(score => {
+                  if (score >= 90) return '#10b981';
+                  if (score >= 80) return '#0ea5e9';
+                  if (score >= 70) return '#eab308';
+                  if (score >= 60) return '#f59e0b';
+                  return '#ef4444';
+                }),
+                borderRadius: 8,
+                borderSkipped: false
+              },
+              {
+                label: '平均得分',
+                data: Array(data.length).fill(avgScore),
+                type: 'line',
+                borderColor: '#ef4444',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false,
+                tension: 0.1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                  usePointStyle: true,
+                  boxWidth: 8
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                borderRadius: 8,
+                titleFont: { size: 13 },
+                callbacks: {
+                  label: function(context) {
+                    if (context.datasetIndex === 0) {
+                      const score = context.raw;
+                      return `分数: ${score.toFixed(1)} - ${getScoreLabel(score)}`;
+                    } else {
+                      return `平均得分: ${context.raw.toFixed(1)}`;
+                    }
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                title: {
+                  display: true,
+                  text: '幸福指数'
+                }
+              },
+              x: {
+                ticks: {
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              }
+            },
+            animation: {
+              duration: 2000,
+              easing: 'easeOutQuart'
+            }
+          }
+        });
+      }
+    };
+
+    // Groups Bar Chart
+    const renderGroupsBarChart = (selectedDepartment = '全部') => {
+      const ctx = document.getElementById('groupsBarChart');
+      if (!ctx) return;
+
+      const filtered = getFilteredGroups(selectedDepartment);
+      const sorted = Object.entries(filtered)
+        .sort((a, b) => b[1].avg - a[1].avg);
+
+      if (sorted.length === 0) return;
+
+      const labels = sorted.map(([name]) => name);
+      const data = sorted.map(([, stats]) => stats.avg);
+      const avgScore = data.reduce((sum, score) => sum + score, 0) / data.length;
+
+      if (groupsBarChart) {
+        groupsBarChart.data.labels = labels;
+        groupsBarChart.data.datasets[0].data = data;
+        groupsBarChart.data.datasets[0].backgroundColor = data.map(score => {
+          if (score >= 90) return '#10b981';
+          if (score >= 80) return '#0ea5e9';
+          if (score >= 70) return '#eab308';
+          if (score >= 60) return '#f59e0b';
+          return '#ef4444';
+        });
+        groupsBarChart.data.datasets[1].data = Array(data.length).fill(avgScore);
+        groupsBarChart.update();
+      } else {
+        groupsBarChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: '幸福指数',
+                data: data,
+                backgroundColor: data.map(score => {
+                  if (score >= 90) return '#10b981';
+                  if (score >= 80) return '#0ea5e9';
+                  if (score >= 70) return '#eab308';
+                  if (score >= 60) return '#f59e0b';
+                  return '#ef4444';
+                }),
+                borderRadius: 8,
+                borderSkipped: false
+              },
+              {
+                label: '平均得分',
+                data: Array(data.length).fill(avgScore),
+                type: 'line',
+                borderColor: '#ef4444',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false,
+                tension: 0.1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                  usePointStyle: true,
+                  boxWidth: 8
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                borderRadius: 8,
+                titleFont: { size: 13 },
+                callbacks: {
+                  label: function(context) {
+                    if (context.datasetIndex === 0) {
+                      const score = context.raw;
+                      return `分数: ${score.toFixed(1)} - ${getScoreLabel(score)}`;
+                    } else {
+                      return `平均得分: ${context.raw.toFixed(1)}`;
+                    }
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                title: {
+                  display: true,
+                  text: '幸福指数'
+                }
+              },
+              x: {
+                ticks: {
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              }
+            },
+            animation: {
+              duration: 2000,
+              easing: 'easeOutQuart'
+            }
+          }
+        });
+      }
+    };
+
+    // Update All Views (for department analysis - shows all departments)
+    const updateAllJobViews = () => {
+      updateJobStats('全部');
+      renderJobRanking('top');
+      renderJobDistChart('全部');
+      renderAllJobsBarChart('全部');
+    };
+
+    // Update Group Views (for group analysis - controlled by department filter)
+    const updateGroupViews = (selectedDepartment) => {
+      updateGroupStats(selectedDepartment);
+      renderGroupsBarChart(selectedDepartment);
+      initializeDimensionSubitemsJob(selectedDepartment);
+    };
+
+    // ============ INITIALIZATION ============
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('初始化职能分析仪表板...');
+      console.log('happyJobQ4 loaded:', typeof happyJobQ4 !== 'undefined', happyJobQ4 ? happyJobQ4.length : 0);
+      console.log('happyJobQ3 loaded:', typeof happyJobQ3 !== 'undefined', happyJobQ3 ? happyJobQ3.length : 0);
+
+      // Re-process data after loading
+      const result = processJobData();
+      jobStats = result.jobStats;
+      groupStats = result.groupStats;
+      groups = result.groups;
+      departmentGroups = result.departmentGroups;
+
+      const rawData = getJobData();
+      console.log('Job data from getJobData:', rawData.length);
+      console.log('Processed jobStats:', Object.keys(jobStats).length);
+
+      renderDepartmentFilters();
+      updateAllJobViews();
+      setupJobRankingTabs();
+      updateGroupViews('全部');
+      initializeDimensionSubitemsJob('全部');
+
+      // Quarter change listener
+      if (window.quarterManager) {
+        window.quarterManager.onQuarterChange(() => {
+          console.log('季度已更改，重新加载职能仪表板数据...');
+          location.reload();
+        });
+      }
+
+      // Sidebar toggle
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      const sidebar = document.getElementById('sidebar');
+
+      if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', function() {
+          sidebar.classList.toggle('active');
+        });
+
+        document.addEventListener('click', function(event) {
+          if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+            sidebar.classList.remove('active');
+          }
+        });
+
+        const sidebarLinks = sidebar.querySelectorAll('a');
+        sidebarLinks.forEach(link => {
+          link.addEventListener('click', function() {
+            sidebar.classList.remove('active');
+          });
+        });
+      }
+
+      // Highlight current page
+      const currentPath = window.location.href.split('/').pop() || 'index.html';
+      document.querySelectorAll('.navbar-nav a, .sidebar-menu a').forEach(link => {
+        const href = link.getAttribute('href');
+        if (href === currentPath || (currentPath === '' && href === 'index.html')) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+
+      console.log('初始化完成');
+    });
+
+    // ============ FOUR DIMENSIONS SUB-DIMENSIONS ============
+
+    function initializeDimensionSubitemsJob(selectedDepartment = '全部') {
+      // Employee Satisfaction Dimensions
+      const employeeDims = [
+        { id: '文化', label: '文化' },
+        { id: '管理', label: '管理' },
+        { id: '发展', label: '发展' },
+        { id: '敬业', label: '敬业' },
+        { id: '回报', label: '回报' },
+        { id: '效率', label: '效率' }
+      ];
+
+      renderDimensionCardsJob('employeeDimensionsJob', employeeDims, selectedDepartment);
+
+      // Process Management Dimensions
+      const processDims = [
+        { id: '过程管理-管理', label: '管理' },
+        { id: '过程管理-效率', label: '效率' },
+        { id: '过程管理-发展', label: '发展' },
+        { id: '过程管理-回报', label: '回报' }
+      ];
+
+      renderDimensionCardsJob('processDimensionsJob', processDims, selectedDepartment);
+
+      // Voice Management Dimensions
+      const voiceDims = [
+        { id: '处理时效', label: '处理时效' },
+        { id: '满意率', label: '满意度' }
+      ];
+
+      renderDimensionCardsJob('voiceDimensionsJob', voiceDims, selectedDepartment);
+
+      // Fragment Survey Dimensions
+      const fragmentDims = [
+        { id: '廉洁调研', label: '廉洁调研' },
+        { id: '文化价值观（转换为百分制）', label: '文化价值观' }
+      ];
+
+      renderDimensionCardsJob('fragmentDimensionsJob', fragmentDims, selectedDepartment);
+    }
+
+    function renderDimensionCardsJob(elementId, dimensions, selectedDepartment) {
+      const grid = document.getElementById(elementId);
+      if (!grid) return;
+
+      const currentData = getJobData();
+      let selectedData = [];
+
+      if (selectedDepartment === '全部') {
+        // All departments - show department level data
+        selectedData = currentData.filter(item => item.组 === "-");
+      } else {
+        // Specific department - show department level data
+        selectedData = currentData.filter(item => item.部门 === selectedDepartment && item.组 === "-");
+      }
+
+      if (selectedData.length === 0) {
+        grid.innerHTML = dimensions.map(dim => `
+          <div class="stat-card opacity-50">
+            <div class="text-2xl font-bold text-gray-400">—</div>
+            <div class="stat-label">${dim.label}</div>
+          </div>
+        `).join('');
+        return;
+      }
+
+      const data = selectedData[0];
+
+      grid.innerHTML = dimensions.map(dim => {
+        const value = data[dim.id];
+        if (value === '-' || value === undefined) {
+          return `
+            <div class="stat-card opacity-50">
+              <div class="text-2xl font-bold text-gray-400">—</div>
+              <div class="stat-label">${dim.label}</div>
+            </div>
+          `;
+        }
+
+        const numValue = parseFloat(value);
+        const color = numValue >= 90 ? 'from-green-400 to-emerald-500' :
+                      numValue >= 80 ? 'from-blue-400 to-cyan-500' :
+                      numValue >= 70 ? 'from-yellow-400 to-orange-500' :
+                      'from-orange-400 to-red-500';
+        return `
+          <div class="stat-card">
+            <div class="text-2xl font-bold bg-gradient-to-r ${color} bg-clip-text text-transparent">${numValue.toFixed(1)}</div>
+            <div class="stat-label">${dim.label}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Show dimension tab
+    window.showJobDimensionTab = function(id, button) {
+      document.querySelectorAll('[id$="DimensionJob"]').forEach(el => {
+        el.classList.add('hidden');
+      });
+
+      const dimMap = {
+        'employee': 'employeeDimensionJob',
+        'process': 'processDimensionJob',
+        'voice': 'voiceDimensionJob',
+        'fragment': 'fragmentDimensionJob'
+      };
+
+      if (dimMap[id]) {
+        document.getElementById(dimMap[id]).classList.remove('hidden');
+      }
+
+      document.querySelectorAll('[onclick^="showJobDimensionTab"]').forEach(btn => {
+        btn.classList.remove('dimension-tab-active', 'text-white', 'shadow-lg');
+        btn.classList.add('bg-slate-100', 'text-slate-700');
+      });
+
+      button.classList.remove('bg-slate-100', 'text-slate-700');
+      button.classList.add('dimension-tab-active', 'text-white');
+    };
+  </script>
+
+  <script src="utils.js"></script>
+  <script src="a11y-feedback.js"></script>
+  <script src="navbar-scroll.js"></script>
+</body>
+</html>
